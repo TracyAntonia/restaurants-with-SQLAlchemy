@@ -1,8 +1,9 @@
 # Necessary libraries
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base  # Updated import
 from alembic.config import Config
+from alembic.config import CommandLine
 
 # Database initialization
 engine = create_engine('sqlite:///restaurant_reviews.db')
@@ -11,7 +12,7 @@ engine = create_engine('sqlite:///restaurant_reviews.db')
 Session = sessionmaker(bind=engine)
 session = Session()
 
-Base = declarative_base()
+Base = declarative_base()  # Updated usage
 
 # Customer class
 class Customer(Base):
@@ -96,9 +97,47 @@ class Review(Base):
 
 # Database migrations
 alembic_cfg = Config("alembic.ini")
-command.upgrade(alembic_cfg, "head")
+CommandLine(alembic_cfg)
 
 if __name__ == "__main__":
     
     # Close
     session.close()
+
+
+
+
+# Testing the code
+customer1 = Customer(first_name= "Alexander", last_name= "Dimitri")
+customer2 = Customer(first_name= "Scott", last_name="Mcall")
+restaurant1 = Restaurant(name= "Zen Garden", price=5)
+restaurant2 = Restaurant(name= "The Talisman", price=3)
+
+# Add reviews
+customer1.add_review(restaurant1, 5)
+customer1.add_review(restaurant2, 4)
+customer2.add_review(restaurant1, 3)
+
+# Customer's full name
+print(customer1.full_name())
+
+# Customers favorite restaurant
+print(customer1.favorite_restaurant().name)
+
+# Fanciest restaurant
+print(Restaurant.fanciest().name)
+
+# Get all restaurant reviews
+reviews = Restaurant.all_reviews()
+for review in reviews:
+    print(review)
+
+# Delete a restaurants review
+customer1.delete_reviews(restaurant1)
+
+# Commit changes
+session.commit()
+
+# Close 
+session.close()
+
